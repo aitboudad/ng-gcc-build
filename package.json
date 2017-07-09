@@ -1,0 +1,16 @@
+{
+  "name": "@ngx-translate/core",
+  "version": "2.0.0-alpha.1",
+  "description": "",
+  "license": "MIT",
+  "dependencies": {
+    "tslib": "^1.7.1"
+  },
+  "peerDependencies": {
+    "@angular/core": "^4.0.0"
+  },
+  "main": "bundles/core.umd.js",
+  "module": "@ngx-translate/core.es5.js",
+  "es2015": "@ngx-translate/core.js",
+  "typings": "core.d.ts"
+}
