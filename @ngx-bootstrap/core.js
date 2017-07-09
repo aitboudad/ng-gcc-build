@@ -1,7 +1,7 @@
-import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Injectable, Input, NgModule, Output, ViewChild, forwardRef } from '@angular/core';
 import { FormsModule, NG_VALUE_ACCESSOR } from '@angular/forms';
 import moment from 'moment';
+import { CommonModule } from '@angular/common';
 
 class DateFormatter {
     /**
@@ -674,9 +674,9 @@ DayPickerComponent.decorators = [
   <thead>
     <tr>
       <th>
-        <button type="button" 
-                class="btn btn-default btn-secondary btn-sm pull-left" 
-                (click)="datePicker.move(-1)" 
+        <button type="button"
+                class="btn btn-default btn-secondary btn-sm pull-left"
+                (click)="datePicker.move(-1)"
                 tabindex="-1"
                 [innerHTML]="CURRENT_THEME_TEMPLATE.ARROW_LEFT">
         </button>
@@ -691,9 +691,9 @@ DayPickerComponent.decorators = [
         </button>
       </th>
       <th>
-        <button type="button" 
-                class="btn btn-default btn-secondary btn-sm pull-right" 
-                (click)="datePicker.move(1)" 
+        <button type="button"
+                class="btn btn-default btn-secondary btn-sm pull-right"
+                (click)="datePicker.move(1)"
                 tabindex="-1"
                 [innerHTML]="CURRENT_THEME_TEMPLATE.ARROW_RIGHT">
         </button>
@@ -707,7 +707,7 @@ DayPickerComponent.decorators = [
     </tr>
   </thead>
   <tbody>
-    <template ngFor [ngForOf]="rows" let-rowz="$implicit" let-index="index">
+    <ng-template ngFor [ngForOf]="rows" let-rowz="$implicit" let-index="index">
       <tr *ngIf="!(datePicker.onlyCurrentMonth && rowz[0].secondary && rowz[6].secondary)">
         <td *ngIf="datePicker.showWeeks" class="h6" class="text-center">
           <em>{{ weekNumbers[index] }}</em>
@@ -722,7 +722,7 @@ DayPickerComponent.decorators = [
           </button>
         </td>
       </tr>
-    </template>
+    </ng-template>
   </tbody>
 </table>
   `
@@ -1458,5 +1458,5 @@ TimepickerModule.ctorParameters = () => [];
  * Generated bundle index. Do not edit.
  */
 
-export { DatepickerModule, TimepickerModule, DatePickerInnerComponent as ɵc, DATEPICKER_CONTROL_VALUE_ACCESSOR as ɵa, DatePickerComponent as ɵb, DatepickerConfig as ɵd, DayPickerComponent as ɵe, MonthPickerComponent as ɵf, YearPickerComponent as ɵg, TIMEPICKER_CONTROL_VALUE_ACCESSOR as ɵh, TimepickerComponent as ɵi, TimepickerConfig as ɵj };
+export { DatePickerComponent, DatepickerModule, DayPickerComponent, MonthPickerComponent, YearPickerComponent, DateFormatter, DatepickerConfig, TimepickerConfig, TimepickerComponent, TimepickerModule, DatePickerInnerComponent as ɵc, DATEPICKER_CONTROL_VALUE_ACCESSOR as ɵa, TIMEPICKER_CONTROL_VALUE_ACCESSOR as ɵb };
 //# sourceMappingURL=core.js.map
