@@ -14,6 +14,44 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+/**
+ * @abstract
+ */
+var TranslateLoader = /** @class */ (function () {
+    function TranslateLoader() {
+    }
+    /**
+     * @abstract
+     * @param {?} lang
+     * @return {?}
+     */
+    TranslateLoader.prototype.getTranslation = function (lang) { };
+    return TranslateLoader;
+}());
+/**
+ * This loader is just a placeholder that does nothing, in case you don't need a loader at all
+ */
+var TranslateFakeLoader = /** @class */ (function (_super) {
+    __extends(TranslateFakeLoader, _super);
+    function TranslateFakeLoader() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    /**
+     * @param {?} lang
+     * @return {?}
+     */
+    TranslateFakeLoader.prototype.getTranslation = function (lang) {
+        return Observable.Observable.of({});
+    };
+    return TranslateFakeLoader;
+}(TranslateLoader));
+TranslateFakeLoader.decorators = [
+    { type: core.Injectable },
+];
+/**
+ * @nocollapse
+ */
+TranslateFakeLoader.ctorParameters = function () { return []; };
 var TranslateStore = /** @class */ (function () {
     function TranslateStore() {
         /**
@@ -52,6 +90,103 @@ var TranslateStore = /** @class */ (function () {
     }
     return TranslateStore;
 }());
+/**
+ * @abstract
+ */
+var TranslateCompiler = /** @class */ (function () {
+    function TranslateCompiler() {
+    }
+    /**
+     * @abstract
+     * @param {?} value
+     * @param {?} lang
+     * @return {?}
+     */
+    TranslateCompiler.prototype.compile = function (value, lang) { };
+    /**
+     * @abstract
+     * @param {?} translations
+     * @param {?} lang
+     * @return {?}
+     */
+    TranslateCompiler.prototype.compileTranslations = function (translations, lang) { };
+    return TranslateCompiler;
+}());
+/**
+ * This compiler is just a placeholder that does nothing, in case you don't need a compiler at all
+ */
+var TranslateFakeCompiler = /** @class */ (function (_super) {
+    __extends(TranslateFakeCompiler, _super);
+    function TranslateFakeCompiler() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    /**
+     * @param {?} value
+     * @param {?} lang
+     * @return {?}
+     */
+    TranslateFakeCompiler.prototype.compile = function (value, lang) {
+        return value;
+    };
+    /**
+     * @param {?} translations
+     * @param {?} lang
+     * @return {?}
+     */
+    TranslateFakeCompiler.prototype.compileTranslations = function (translations, lang) {
+        return translations;
+    };
+    return TranslateFakeCompiler;
+}(TranslateCompiler));
+TranslateFakeCompiler.decorators = [
+    { type: core.Injectable },
+];
+/**
+ * @nocollapse
+ */
+TranslateFakeCompiler.ctorParameters = function () { return []; };
+/**
+ * @abstract
+ */
+var MissingTranslationHandler = /** @class */ (function () {
+    function MissingTranslationHandler() {
+    }
+    /**
+     * A function that handles missing translations.
+     *
+     * @abstract
+     * If it returns a value, then this value is used.
+     * If it return an observable, the value returned by this observable will be used (except if the method was "instant").
+     * If it doesn't return then the key will be used as a value
+     * @abstract
+     * @param {?} params
+     * @return {?}
+     */
+    MissingTranslationHandler.prototype.handle = function (params) { };
+    return MissingTranslationHandler;
+}());
+/**
+ * This handler is just a placeholder that does nothing, in case you don't need a missing translation handler at all
+ */
+var FakeMissingTranslationHandler = /** @class */ (function () {
+    function FakeMissingTranslationHandler() {
+    }
+    /**
+     * @param {?} params
+     * @return {?}
+     */
+    FakeMissingTranslationHandler.prototype.handle = function (params) {
+        return params.key;
+    };
+    return FakeMissingTranslationHandler;
+}());
+FakeMissingTranslationHandler.decorators = [
+    { type: core.Injectable },
+];
+/**
+ * @nocollapse
+ */
+FakeMissingTranslationHandler.ctorParameters = function () { return []; };
 /**
  * \@name equals
  *
@@ -150,141 +285,6 @@ function mergeDeep(target, source) {
     }
     return output;
 }
-/**
- * @abstract
- */
-var TranslateLoader = /** @class */ (function () {
-    function TranslateLoader() {
-    }
-    /**
-     * @abstract
-     * @param {?} lang
-     * @return {?}
-     */
-    TranslateLoader.prototype.getTranslation = function (lang) { };
-    return TranslateLoader;
-}());
-/**
- * This loader is just a placeholder that does nothing, in case you don't need a loader at all
- */
-var TranslateFakeLoader = /** @class */ (function (_super) {
-    __extends(TranslateFakeLoader, _super);
-    function TranslateFakeLoader() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    /**
-     * @param {?} lang
-     * @return {?}
-     */
-    TranslateFakeLoader.prototype.getTranslation = function (lang) {
-        return Observable.Observable.of({});
-    };
-    return TranslateFakeLoader;
-}(TranslateLoader));
-TranslateFakeLoader.decorators = [
-    { type: core.Injectable },
-];
-/**
- * @nocollapse
- */
-TranslateFakeLoader.ctorParameters = function () { return []; };
-/**
- * @abstract
- */
-var TranslateCompiler = /** @class */ (function () {
-    function TranslateCompiler() {
-    }
-    /**
-     * @abstract
-     * @param {?} value
-     * @param {?} lang
-     * @return {?}
-     */
-    TranslateCompiler.prototype.compile = function (value, lang) { };
-    /**
-     * @abstract
-     * @param {?} translations
-     * @param {?} lang
-     * @return {?}
-     */
-    TranslateCompiler.prototype.compileTranslations = function (translations, lang) { };
-    return TranslateCompiler;
-}());
-/**
- * This compiler is just a placeholder that does nothing, in case you don't need a compiler at all
- */
-var TranslateFakeCompiler = /** @class */ (function (_super) {
-    __extends(TranslateFakeCompiler, _super);
-    function TranslateFakeCompiler() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    /**
-     * @param {?} value
-     * @param {?} lang
-     * @return {?}
-     */
-    TranslateFakeCompiler.prototype.compile = function (value, lang) {
-        return value;
-    };
-    /**
-     * @param {?} translations
-     * @param {?} lang
-     * @return {?}
-     */
-    TranslateFakeCompiler.prototype.compileTranslations = function (translations, lang) {
-        return translations;
-    };
-    return TranslateFakeCompiler;
-}(TranslateCompiler));
-TranslateFakeCompiler.decorators = [
-    { type: core.Injectable },
-];
-/**
- * @nocollapse
- */
-TranslateFakeCompiler.ctorParameters = function () { return []; };
-/**
- * @abstract
- */
-var MissingTranslationHandler = /** @class */ (function () {
-    function MissingTranslationHandler() {
-    }
-    /**
-     * A function that handles missing translations.
-     *
-     * @abstract
-     * If it returns a value, then this value is used.
-     * If it return an observable, the value returned by this observable will be used (except if the method was "instant").
-     * If it doesn't return then the key will be used as a value
-     * @abstract
-     * @param {?} params
-     * @return {?}
-     */
-    MissingTranslationHandler.prototype.handle = function (params) { };
-    return MissingTranslationHandler;
-}());
-/**
- * This handler is just a placeholder that does nothing, in case you don't need a missing translation handler at all
- */
-var FakeMissingTranslationHandler = /** @class */ (function () {
-    function FakeMissingTranslationHandler() {
-    }
-    /**
-     * @param {?} params
-     * @return {?}
-     */
-    FakeMissingTranslationHandler.prototype.handle = function (params) {
-        return params.key;
-    };
-    return FakeMissingTranslationHandler;
-}());
-FakeMissingTranslationHandler.decorators = [
-    { type: core.Injectable },
-];
-/**
- * @nocollapse
- */
-FakeMissingTranslationHandler.ctorParameters = function () { return []; };
 /**
  * @abstract
  */
@@ -1095,10 +1095,69 @@ TranslatePipe.ctorParameters = function () { return [
     { type: TranslateService, },
     { type: core.ChangeDetectorRef, },
 ]; };
+// import {TranslateDirective} from "./translate.directive";
+var TranslateModule = /** @class */ (function () {
+    function TranslateModule() {
+    }
+    /**
+     * Use this method in your root module to provide the TranslateService
+     * @param {?=} config
+     * @return {?}
+     */
+    TranslateModule.forRoot = function (config) {
+        if (config === void 0) { config = {}; }
+        return {
+            ngModule: TranslateModule,
+            providers: [
+                config.loader || { provide: TranslateLoader, useClass: TranslateFakeLoader },
+                config.compiler || { provide: TranslateCompiler, useClass: TranslateFakeCompiler },
+                config.parser || { provide: TranslateParser, useClass: TranslateDefaultParser },
+                config.missingTranslationHandler || { provide: MissingTranslationHandler, useClass: FakeMissingTranslationHandler },
+                TranslateStore,
+                { provide: USE_STORE, useValue: config.isolate },
+                { provide: USE_DEFAULT_LANG, useValue: config.useDefaultLang },
+                TranslateService
+            ]
+        };
+    };
+    /**
+     * Use this method in your other (non root) modules to import the directive/pipe
+     * @param {?=} config
+     * @return {?}
+     */
+    TranslateModule.forChild = function (config) {
+        if (config === void 0) { config = {}; }
+        return {
+            ngModule: TranslateModule,
+            providers: [
+                config.loader || { provide: TranslateLoader, useClass: TranslateFakeLoader },
+                config.compiler || { provide: TranslateCompiler, useClass: TranslateFakeCompiler },
+                config.parser || { provide: TranslateParser, useClass: TranslateDefaultParser },
+                config.missingTranslationHandler || { provide: MissingTranslationHandler, useClass: FakeMissingTranslationHandler },
+                { provide: USE_STORE, useValue: config.isolate },
+                { provide: USE_DEFAULT_LANG, useValue: config.useDefaultLang },
+                TranslateService
+            ]
+        };
+    };
+    return TranslateModule;
+}());
+TranslateModule.decorators = [
+    { type: core.NgModule, args: [{
+                declarations: [
+                    TranslatePipe,
+                ],
+                exports: [
+                    TranslatePipe,
+                ]
+            },] },
+];
+/**
+ * @nocollapse
+ */
+TranslateModule.ctorParameters = function () { return []; };
 
-exports.TranslateStore = TranslateStore;
-exports.equals = equals;
-exports.isDefined = isDefined;
+exports.TranslateModule = TranslateModule;
 exports.TranslateLoader = TranslateLoader;
 exports.TranslateFakeLoader = TranslateFakeLoader;
 exports.USE_STORE = USE_STORE;
@@ -1108,8 +1167,10 @@ exports.MissingTranslationHandler = MissingTranslationHandler;
 exports.FakeMissingTranslationHandler = FakeMissingTranslationHandler;
 exports.TranslateParser = TranslateParser;
 exports.TranslateDefaultParser = TranslateDefaultParser;
+exports.TranslateCompiler = TranslateCompiler;
+exports.TranslateFakeCompiler = TranslateFakeCompiler;
 exports.TranslatePipe = TranslatePipe;
-exports.ɵa = TranslateCompiler;
+exports.ɵa = TranslateStore;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
