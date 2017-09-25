@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, EventEmitter, Inject, Injectable, OpaqueToken, Pipe } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { ChangeDetectorRef, EventEmitter, Inject, Injectable, InjectionToken, Pipe } from '@angular/core';
+import { Observable as Observable$1 } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/concat';
 import 'rxjs/add/operator/share';
@@ -165,7 +165,7 @@ class TranslateFakeLoader extends TranslateLoader {
      * @return {?}
      */
     getTranslation(lang) {
-        return Observable.of({});
+        return Observable$1.of({});
     }
 }
 TranslateFakeLoader.decorators = [
@@ -175,6 +175,54 @@ TranslateFakeLoader.decorators = [
  * @nocollapse
  */
 TranslateFakeLoader.ctorParameters = () => [];
+
+/**
+ * @abstract
+ */
+class TranslateCompiler {
+    /**
+     * @abstract
+     * @param {?} value
+     * @param {?} lang
+     * @return {?}
+     */
+    compile(value, lang) { }
+    /**
+     * @abstract
+     * @param {?} translations
+     * @param {?} lang
+     * @return {?}
+     */
+    compileTranslations(translations, lang) { }
+}
+/**
+ * This compiler is just a placeholder that does nothing, in case you don't need a compiler at all
+ */
+class TranslateFakeCompiler extends TranslateCompiler {
+    /**
+     * @param {?} value
+     * @param {?} lang
+     * @return {?}
+     */
+    compile(value, lang) {
+        return value;
+    }
+    /**
+     * @param {?} translations
+     * @param {?} lang
+     * @return {?}
+     */
+    compileTranslations(translations, lang) {
+        return translations;
+    }
+}
+TranslateFakeCompiler.decorators = [
+    { type: Injectable },
+];
+/**
+ * @nocollapse
+ */
+TranslateFakeCompiler.ctorParameters = () => [];
 
 /**
  * @abstract
@@ -247,13 +295,18 @@ class TranslateDefaultParser extends TranslateParser {
      * @return {?}
      */
     interpolate(expr, params) {
-        if (typeof expr !== 'string' || !params) {
-            return expr;
+        let /** @type {?} */ result;
+        if (typeof expr === 'string') {
+            result = this.interpolateString(expr, params);
         }
-        return expr.replace(this.templateMatcher, (substring, b) => {
-            let /** @type {?} */ r = this.getValue(params, b);
-            return isDefined(r) ? r : substring;
-        });
+        else if (typeof expr === 'function') {
+            result = this.interpolateFunction(expr, params);
+        }
+        else {
+            // this should not happen, but an unrelated TranslateService test depends on it
+            result = (expr);
+        }
+        return result;
     }
     /**
      * @param {?} target
@@ -278,6 +331,28 @@ class TranslateDefaultParser extends TranslateParser {
         } while (keys.length);
         return target;
     }
+    /**
+     * @param {?} fn
+     * @param {?=} params
+     * @return {?}
+     */
+    interpolateFunction(fn, params) {
+        return fn(params);
+    }
+    /**
+     * @param {?} expr
+     * @param {?=} params
+     * @return {?}
+     */
+    interpolateString(expr, params) {
+        if (!params) {
+            return expr;
+        }
+        return expr.replace(this.templateMatcher, (substring, b) => {
+            let /** @type {?} */ r = this.getValue(params, b);
+            return isDefined(r) ? r : substring;
+        });
+    }
 }
 TranslateDefaultParser.decorators = [
     { type: Injectable },
@@ -287,21 +362,26 @@ TranslateDefaultParser.decorators = [
  */
 TranslateDefaultParser.ctorParameters = () => [];
 
-const USE_STORE = new OpaqueToken('USE_STORE');
+const USE_STORE = new InjectionToken('USE_STORE');
+const USE_DEFAULT_LANG = new InjectionToken('USE_DEFAULT_LANG');
 class TranslateService {
     /**
      *
      * @param {?} store an instance of the store (that is supposed to be unique)
      * @param {?} currentLoader An instance of the loader currently used
+     * @param {?} compiler An instance of the compiler currently used
      * @param {?} parser An instance of the parser currently used
      * @param {?} missingTranslationHandler A handler for missing translations.
+     * @param {?=} useDefaultLang whether we should use default language translation when current language translation is missing.
      * @param {?=} isolate whether this service should use the store or not
      */
-    constructor(store, currentLoader, parser, missingTranslationHandler, isolate = false) {
+    constructor(store, currentLoader, compiler, parser, missingTranslationHandler, useDefaultLang = true, isolate = false) {
         this.store = store;
         this.currentLoader = currentLoader;
+        this.compiler = compiler;
         this.parser = parser;
         this.missingTranslationHandler = missingTranslationHandler;
+        this.useDefaultLang = useDefaultLang;
         this.isolate = isolate;
         this.pending = false;
         this._onTranslationChange = new EventEmitter();
@@ -454,6 +534,10 @@ class TranslateService {
      * @return {?}
      */
     use(lang) {
+        // don't change the language if the language given is already selected
+        if (lang === this.currentLang) {
+            return Observable$1.of(this.translations[lang]);
+        }
         let /** @type {?} */ pending = this.retrieveTranslations(lang);
         if (typeof pending !== "undefined") {
             // on init set the currentLang immediately
@@ -468,7 +552,7 @@ class TranslateService {
         }
         else {
             this.changeLang(lang);
-            return Observable.of(this.translations[lang]);
+            return Observable$1.of(this.translations[lang]);
         }
     }
     /**
@@ -487,6 +571,7 @@ class TranslateService {
     }
     /**
      * Gets an object of translations for a given language with the current loader
+     * and passes it through the compiler
      * @param {?} lang
      * @return {?}
      */
@@ -495,7 +580,7 @@ class TranslateService {
         this.loadingTranslations = this.currentLoader.getTranslation(lang).share();
         this.loadingTranslations.take(1)
             .subscribe((res) => {
-            this.translations[lang] = res;
+            this.translations[lang] = this.compiler.compileTranslations(res, lang);
             this.updateLangs();
             this.pending = false;
         }, (err) => {
@@ -505,12 +590,14 @@ class TranslateService {
     }
     /**
      * Manually sets an object of translations for a given language
+     * after passing it through the compiler
      * @param {?} lang
      * @param {?} translations
      * @param {?=} shouldMerge
      * @return {?}
      */
     setTranslation(lang, translations, shouldMerge = false) {
+        translations = this.compiler.compileTranslations(translations, lang);
         if (shouldMerge && this.translations[lang]) {
             this.translations[lang] = mergeDeep(this.translations[lang], translations);
         }
@@ -566,7 +653,7 @@ class TranslateService {
             if (observables) {
                 let /** @type {?} */ mergedObs;
                 for (let /** @type {?} */ k of key) {
-                    let /** @type {?} */ obs = typeof result[k].subscribe === "function" ? result[k] : Observable.of(result[k]);
+                    let /** @type {?} */ obs = typeof result[k].subscribe === "function" ? result[k] : Observable$1.of(result[k]);
                     if (typeof mergedObs === "undefined") {
                         mergedObs = obs;
                     }
@@ -587,7 +674,7 @@ class TranslateService {
         if (translations) {
             res = this.parser.interpolate(this.parser.getValue(translations, key), interpolateParams);
         }
-        if (typeof res === "undefined" && this.defaultLang && this.defaultLang !== this.currentLang) {
+        if (typeof res === "undefined" && this.defaultLang && this.defaultLang !== this.currentLang && this.useDefaultLang) {
             res = this.parser.interpolate(this.parser.getValue(this.translations[this.defaultLang], key), interpolateParams);
         }
         if (typeof res === "undefined") {
@@ -611,7 +698,7 @@ class TranslateService {
         }
         // check if we are loading a new translation to use
         if (this.pending) {
-            return Observable.create((observer) => {
+            return Observable$1.create((observer) => {
                 let /** @type {?} */ onComplete = (res) => {
                     observer.next(res);
                     observer.complete();
@@ -636,7 +723,7 @@ class TranslateService {
                 return res;
             }
             else {
-                return Observable.of(res);
+                return Observable$1.of(res);
             }
         }
     }
@@ -659,7 +746,7 @@ class TranslateService {
                 return res;
             }
             else {
-                return Observable.of(res);
+                return Observable$1.of(res);
             }
         }));
     }
@@ -690,14 +777,14 @@ class TranslateService {
         }
     }
     /**
-     * Sets the translated value of a key
+     * Sets the translated value of a key, after compiling it
      * @param {?} key
      * @param {?} value
      * @param {?=} lang
      * @return {?}
      */
     set(key, value, lang = this.currentLang) {
-        this.translations[lang][key] = value;
+        this.translations[lang][key] = this.compiler.compile(value, lang);
         this.updateLangs();
         this.onTranslationChange.emit({ lang: lang, translations: this.translations[lang] });
     }
@@ -783,8 +870,10 @@ TranslateService.decorators = [
 TranslateService.ctorParameters = () => [
     { type: TranslateStore, },
     { type: TranslateLoader, },
+    { type: TranslateCompiler, },
     { type: TranslateParser, },
     { type: MissingTranslationHandler, },
+    { type: undefined, decorators: [{ type: Inject, args: [USE_DEFAULT_LANG,] },] },
     { type: undefined, decorators: [{ type: Inject, args: [USE_STORE,] },] },
 ];
 
@@ -934,5 +1023,5 @@ TranslatePipe.ctorParameters = () => [
  * Generated bundle index. Do not edit.
  */
 
-export { TranslateStore, equals, isDefined, TranslateLoader, TranslateFakeLoader, USE_STORE, TranslateService, MissingTranslationHandler, FakeMissingTranslationHandler, TranslateParser, TranslateDefaultParser, TranslatePipe };
+export { TranslateStore, equals, isDefined, TranslateLoader, TranslateFakeLoader, USE_STORE, USE_DEFAULT_LANG, TranslateService, MissingTranslationHandler, FakeMissingTranslationHandler, TranslateParser, TranslateDefaultParser, TranslatePipe, TranslateCompiler as ɵa };
 //# sourceMappingURL=core.js.map

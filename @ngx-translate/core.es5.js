@@ -8,8 +8,8 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-import { ChangeDetectorRef, EventEmitter, Inject, Injectable, OpaqueToken, Pipe } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
+import { ChangeDetectorRef, EventEmitter, Inject, Injectable, InjectionToken, Pipe } from '@angular/core';
+import { Observable as Observable$1 } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/concat';
 import 'rxjs/add/operator/share';
@@ -18,7 +18,7 @@ import 'rxjs/add/operator/merge';
 import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/toArray';
 import 'rxjs/add/operator/take';
-var TranslateStore = (function () {
+var TranslateStore = /** @class */ (function () {
     function TranslateStore() {
         /**
          * The lang currently used
@@ -157,7 +157,7 @@ function mergeDeep(target, source) {
 /**
  * @abstract
  */
-var TranslateLoader = (function () {
+var TranslateLoader = /** @class */ (function () {
     function TranslateLoader() {
     }
     /**
@@ -171,7 +171,7 @@ var TranslateLoader = (function () {
 /**
  * This loader is just a placeholder that does nothing, in case you don't need a loader at all
  */
-var TranslateFakeLoader = (function (_super) {
+var TranslateFakeLoader = /** @class */ (function (_super) {
     __extends(TranslateFakeLoader, _super);
     function TranslateFakeLoader() {
         return _super !== null && _super.apply(this, arguments) || this;
@@ -181,7 +181,7 @@ var TranslateFakeLoader = (function (_super) {
      * @return {?}
      */
     TranslateFakeLoader.prototype.getTranslation = function (lang) {
-        return Observable.of({});
+        return Observable$1.of({});
     };
     return TranslateFakeLoader;
 }(TranslateLoader));
@@ -195,7 +195,62 @@ TranslateFakeLoader.ctorParameters = function () { return []; };
 /**
  * @abstract
  */
-var MissingTranslationHandler = (function () {
+var TranslateCompiler = /** @class */ (function () {
+    function TranslateCompiler() {
+    }
+    /**
+     * @abstract
+     * @param {?} value
+     * @param {?} lang
+     * @return {?}
+     */
+    TranslateCompiler.prototype.compile = function (value, lang) { };
+    /**
+     * @abstract
+     * @param {?} translations
+     * @param {?} lang
+     * @return {?}
+     */
+    TranslateCompiler.prototype.compileTranslations = function (translations, lang) { };
+    return TranslateCompiler;
+}());
+/**
+ * This compiler is just a placeholder that does nothing, in case you don't need a compiler at all
+ */
+var TranslateFakeCompiler = /** @class */ (function (_super) {
+    __extends(TranslateFakeCompiler, _super);
+    function TranslateFakeCompiler() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    /**
+     * @param {?} value
+     * @param {?} lang
+     * @return {?}
+     */
+    TranslateFakeCompiler.prototype.compile = function (value, lang) {
+        return value;
+    };
+    /**
+     * @param {?} translations
+     * @param {?} lang
+     * @return {?}
+     */
+    TranslateFakeCompiler.prototype.compileTranslations = function (translations, lang) {
+        return translations;
+    };
+    return TranslateFakeCompiler;
+}(TranslateCompiler));
+TranslateFakeCompiler.decorators = [
+    { type: Injectable },
+];
+/**
+ * @nocollapse
+ */
+TranslateFakeCompiler.ctorParameters = function () { return []; };
+/**
+ * @abstract
+ */
+var MissingTranslationHandler = /** @class */ (function () {
     function MissingTranslationHandler() {
     }
     /**
@@ -215,7 +270,7 @@ var MissingTranslationHandler = (function () {
 /**
  * This handler is just a placeholder that does nothing, in case you don't need a missing translation handler at all
  */
-var FakeMissingTranslationHandler = (function () {
+var FakeMissingTranslationHandler = /** @class */ (function () {
     function FakeMissingTranslationHandler() {
     }
     /**
@@ -237,7 +292,7 @@ FakeMissingTranslationHandler.ctorParameters = function () { return []; };
 /**
  * @abstract
  */
-var TranslateParser = (function () {
+var TranslateParser = /** @class */ (function () {
     function TranslateParser() {
     }
     /**
@@ -260,7 +315,7 @@ var TranslateParser = (function () {
     TranslateParser.prototype.getValue = function (target, key) { };
     return TranslateParser;
 }());
-var TranslateDefaultParser = (function (_super) {
+var TranslateDefaultParser = /** @class */ (function (_super) {
     __extends(TranslateDefaultParser, _super);
     function TranslateDefaultParser() {
         var _this = _super.apply(this, arguments) || this;
@@ -273,14 +328,18 @@ var TranslateDefaultParser = (function (_super) {
      * @return {?}
      */
     TranslateDefaultParser.prototype.interpolate = function (expr, params) {
-        var _this = this;
-        if (typeof expr !== 'string' || !params) {
-            return expr;
+        var /** @type {?} */ result;
+        if (typeof expr === 'string') {
+            result = this.interpolateString(expr, params);
         }
-        return expr.replace(this.templateMatcher, function (substring, b) {
-            var /** @type {?} */ r = _this.getValue(params, b);
-            return isDefined(r) ? r : substring;
-        });
+        else if (typeof expr === 'function') {
+            result = this.interpolateFunction(expr, params);
+        }
+        else {
+            // this should not happen, but an unrelated TranslateService test depends on it
+            result = (expr);
+        }
+        return result;
     };
     /**
      * @param {?} target
@@ -305,6 +364,29 @@ var TranslateDefaultParser = (function (_super) {
         } while (keys.length);
         return target;
     };
+    /**
+     * @param {?} fn
+     * @param {?=} params
+     * @return {?}
+     */
+    TranslateDefaultParser.prototype.interpolateFunction = function (fn, params) {
+        return fn(params);
+    };
+    /**
+     * @param {?} expr
+     * @param {?=} params
+     * @return {?}
+     */
+    TranslateDefaultParser.prototype.interpolateString = function (expr, params) {
+        var _this = this;
+        if (!params) {
+            return expr;
+        }
+        return expr.replace(this.templateMatcher, function (substring, b) {
+            var /** @type {?} */ r = _this.getValue(params, b);
+            return isDefined(r) ? r : substring;
+        });
+    };
     return TranslateDefaultParser;
 }(TranslateParser));
 TranslateDefaultParser.decorators = [
@@ -314,22 +396,28 @@ TranslateDefaultParser.decorators = [
  * @nocollapse
  */
 TranslateDefaultParser.ctorParameters = function () { return []; };
-var USE_STORE = new OpaqueToken('USE_STORE');
-var TranslateService = (function () {
+var USE_STORE = new InjectionToken('USE_STORE');
+var USE_DEFAULT_LANG = new InjectionToken('USE_DEFAULT_LANG');
+var TranslateService = /** @class */ (function () {
     /**
      *
      * @param {?} store an instance of the store (that is supposed to be unique)
      * @param {?} currentLoader An instance of the loader currently used
+     * @param {?} compiler An instance of the compiler currently used
      * @param {?} parser An instance of the parser currently used
      * @param {?} missingTranslationHandler A handler for missing translations.
+     * @param {?=} useDefaultLang whether we should use default language translation when current language translation is missing.
      * @param {?=} isolate whether this service should use the store or not
      */
-    function TranslateService(store, currentLoader, parser, missingTranslationHandler, isolate) {
+    function TranslateService(store, currentLoader, compiler, parser, missingTranslationHandler, useDefaultLang, isolate) {
+        if (useDefaultLang === void 0) { useDefaultLang = true; }
         if (isolate === void 0) { isolate = false; }
         this.store = store;
         this.currentLoader = currentLoader;
+        this.compiler = compiler;
         this.parser = parser;
         this.missingTranslationHandler = missingTranslationHandler;
+        this.useDefaultLang = useDefaultLang;
         this.isolate = isolate;
         this.pending = false;
         this._onTranslationChange = new EventEmitter();
@@ -512,6 +600,10 @@ var TranslateService = (function () {
      */
     TranslateService.prototype.use = function (lang) {
         var _this = this;
+        // don't change the language if the language given is already selected
+        if (lang === this.currentLang) {
+            return Observable$1.of(this.translations[lang]);
+        }
         var /** @type {?} */ pending = this.retrieveTranslations(lang);
         if (typeof pending !== "undefined") {
             // on init set the currentLang immediately
@@ -526,7 +618,7 @@ var TranslateService = (function () {
         }
         else {
             this.changeLang(lang);
-            return Observable.of(this.translations[lang]);
+            return Observable$1.of(this.translations[lang]);
         }
     };
     /**
@@ -545,6 +637,7 @@ var TranslateService = (function () {
     };
     /**
      * Gets an object of translations for a given language with the current loader
+     * and passes it through the compiler
      * @param {?} lang
      * @return {?}
      */
@@ -554,7 +647,7 @@ var TranslateService = (function () {
         this.loadingTranslations = this.currentLoader.getTranslation(lang).share();
         this.loadingTranslations.take(1)
             .subscribe(function (res) {
-            _this.translations[lang] = res;
+            _this.translations[lang] = _this.compiler.compileTranslations(res, lang);
             _this.updateLangs();
             _this.pending = false;
         }, function (err) {
@@ -564,6 +657,7 @@ var TranslateService = (function () {
     };
     /**
      * Manually sets an object of translations for a given language
+     * after passing it through the compiler
      * @param {?} lang
      * @param {?} translations
      * @param {?=} shouldMerge
@@ -571,6 +665,7 @@ var TranslateService = (function () {
      */
     TranslateService.prototype.setTranslation = function (lang, translations, shouldMerge) {
         if (shouldMerge === void 0) { shouldMerge = false; }
+        translations = this.compiler.compileTranslations(translations, lang);
         if (shouldMerge && this.translations[lang]) {
             this.translations[lang] = mergeDeep(this.translations[lang], translations);
         }
@@ -629,7 +724,7 @@ var TranslateService = (function () {
                 var /** @type {?} */ mergedObs = void 0;
                 for (var _a = 0, key_2 = key; _a < key_2.length; _a++) {
                     var k = key_2[_a];
-                    var /** @type {?} */ obs = typeof result[k].subscribe === "function" ? result[k] : Observable.of(result[k]);
+                    var /** @type {?} */ obs = typeof result[k].subscribe === "function" ? result[k] : Observable$1.of(result[k]);
                     if (typeof mergedObs === "undefined") {
                         mergedObs = obs;
                     }
@@ -650,7 +745,7 @@ var TranslateService = (function () {
         if (translations) {
             res = this.parser.interpolate(this.parser.getValue(translations, key), interpolateParams);
         }
-        if (typeof res === "undefined" && this.defaultLang && this.defaultLang !== this.currentLang) {
+        if (typeof res === "undefined" && this.defaultLang && this.defaultLang !== this.currentLang && this.useDefaultLang) {
             res = this.parser.interpolate(this.parser.getValue(this.translations[this.defaultLang], key), interpolateParams);
         }
         if (typeof res === "undefined") {
@@ -675,7 +770,7 @@ var TranslateService = (function () {
         }
         // check if we are loading a new translation to use
         if (this.pending) {
-            return Observable.create(function (observer) {
+            return Observable$1.create(function (observer) {
                 var /** @type {?} */ onComplete = function (res) {
                     observer.next(res);
                     observer.complete();
@@ -700,7 +795,7 @@ var TranslateService = (function () {
                 return res;
             }
             else {
-                return Observable.of(res);
+                return Observable$1.of(res);
             }
         }
     };
@@ -724,7 +819,7 @@ var TranslateService = (function () {
                 return res;
             }
             else {
-                return Observable.of(res);
+                return Observable$1.of(res);
             }
         }));
     };
@@ -755,7 +850,7 @@ var TranslateService = (function () {
         }
     };
     /**
-     * Sets the translated value of a key
+     * Sets the translated value of a key, after compiling it
      * @param {?} key
      * @param {?} value
      * @param {?=} lang
@@ -763,7 +858,7 @@ var TranslateService = (function () {
      */
     TranslateService.prototype.set = function (key, value, lang) {
         if (lang === void 0) { lang = this.currentLang; }
-        this.translations[lang][key] = value;
+        this.translations[lang][key] = this.compiler.compile(value, lang);
         this.updateLangs();
         this.onTranslationChange.emit({ lang: lang, translations: this.translations[lang] });
     };
@@ -850,11 +945,13 @@ TranslateService.decorators = [
 TranslateService.ctorParameters = function () { return [
     { type: TranslateStore, },
     { type: TranslateLoader, },
+    { type: TranslateCompiler, },
     { type: TranslateParser, },
     { type: MissingTranslationHandler, },
+    { type: undefined, decorators: [{ type: Inject, args: [USE_DEFAULT_LANG,] },] },
     { type: undefined, decorators: [{ type: Inject, args: [USE_STORE,] },] },
 ]; };
-var TranslatePipe = (function () {
+var TranslatePipe = /** @class */ (function () {
     /**
      * @param {?} translate
      * @param {?} _ref
@@ -1005,5 +1102,5 @@ TranslatePipe.ctorParameters = function () { return [
 /**
  * Generated bundle index. Do not edit.
  */
-export { TranslateStore, equals, isDefined, TranslateLoader, TranslateFakeLoader, USE_STORE, TranslateService, MissingTranslationHandler, FakeMissingTranslationHandler, TranslateParser, TranslateDefaultParser, TranslatePipe };
+export { TranslateStore, equals, isDefined, TranslateLoader, TranslateFakeLoader, USE_STORE, USE_DEFAULT_LANG, TranslateService, MissingTranslationHandler, FakeMissingTranslationHandler, TranslateParser, TranslateDefaultParser, TranslatePipe, TranslateCompiler as ɵa };
 //# sourceMappingURL=core.es5.js.map
