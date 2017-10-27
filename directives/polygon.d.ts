@@ -28,32 +28,3 @@ export declare class Polygon extends BaseMapDirective {
     rightclick: any;
     constructor(nguiMapComp: NguiMapComponent);
 }
-export interface PolygonOutput {
-    click: any;
-    dblclick: any;
-    drag: any;
-    dragend: any;
-    dragstart: any;
-    mousedown: any;
-    mousemove: any;
-    mouseout: any;
-    mouseover: any;
-    mouseup: any;
-    rightclick: any;
-}
-export interface PolygonInput {
-    clickable: any;
-    draggable: any;
-    editable: any;
-    fillColor: any;
-    fillOpacity: any;
-    geodesic: any;
-    paths: any;
-    strokeColor: any;
-    strokeOpacity: any;
-    strokePosition: any;
-    strokeWeight: any;
-    visible: any;
-    zIndex: any;
-    options: any;
-}

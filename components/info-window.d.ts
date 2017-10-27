@@ -29,21 +29,6 @@ export declare class InfoWindow implements OnInit, OnChanges, OnDestroy {
     ngOnChanges(changes: SimpleChanges): void;
     initialize(): void;
     open(anchor: google.maps.MVCObject): void;
+    close(): void;
     ngOnDestroy(): void;
-}
-export interface InfoWindowOutput {
-    closeclick: any;
-    content_changed: any;
-    domready: any;
-    position_changed: any;
-    zindex_changed: any;
-}
-export interface InfoWindowInput {
-    content: any;
-    disableAutoPan: any;
-    maxWidth: any;
-    pixelOffset: any;
-    position: any;
-    zIndex: any;
-    options: any;
 }

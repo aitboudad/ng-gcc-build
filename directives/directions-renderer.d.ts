@@ -28,21 +28,3 @@ export declare class DirectionsRenderer extends BaseMapDirective implements OnCh
     showDirections(directionsRequest: google.maps.DirectionsRequest): void;
     ngOnDestroy(): void;
 }
-export interface DirectionsRendererOutput {
-    directions_changed: any;
-}
-export interface DirectionsRendererInput {
-    directions: any;
-    draggable: any;
-    hideRouteList: any;
-    infoWindow: any;
-    panel: any;
-    markerOptions: any;
-    polylineOptions: any;
-    preserveViewport: any;
-    routeIndex: any;
-    suppressBicyclingLayer: any;
-    suppressInfoWindows: any;
-    suppressMarkers: any;
-    suppressPolylines: any;
-}

@@ -13,13 +13,3 @@ export declare class GroundOverlay extends BaseMapDirective {
     constructor(nguiMapComp: NguiMapComponent);
     initialize(): void;
 }
-export interface GroundOverlayOutput {
-    click: any;
-    dblclick: any;
-}
-export interface GroundOverlayInput {
-    url: any;
-    bounds: any;
-    clickable: any;
-    opacity: any;
-}

@@ -5,9 +5,3 @@ export declare class TrafficLayer extends BaseMapDirective {
     options: any;
     constructor(nguiMapComp: NguiMapComponent);
 }
-export interface TrafficLayerOutput {
-}
-export interface TrafficLayerInput {
-    autoRefresh: any;
-    options: any;
-}

@@ -38,36 +38,3 @@ export declare class Circle extends BaseMapDirective {
     initialize(): void;
     setCenter(): void;
 }
-export interface CircleOutput {
-    centerChanged: any;
-    click: any;
-    dblclick: any;
-    drag: any;
-    dragend: any;
-    dragstart: any;
-    mousedown: any;
-    mousemove: any;
-    mouseout: any;
-    mouseover: any;
-    mouseup: any;
-    radiusChanged: any;
-    rightclick: any;
-}
-export interface CircleInput {
-    center: any;
-    clickable: any;
-    draggable: any;
-    editable: any;
-    fillColor: any;
-    fillOpacity: any;
-    map: any;
-    radius: any;
-    strokeColor: any;
-    strokeOpacity: any;
-    strokePosition: any;
-    strokeWeight: any;
-    visible: any;
-    zIndex: any;
-    options: any;
-    geoFallbackCenter: any;
-}

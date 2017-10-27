@@ -7,6 +7,7 @@ export declare class DataLayer extends BaseMapDirective {
     featureFactory: any;
     style: any;
     geoJson: any;
+    geoJsonUrl: any;
     addfeature: any;
     click: any;
     dblclick: any;
@@ -21,26 +22,4 @@ export declare class DataLayer extends BaseMapDirective {
     setproperty: any;
     constructor(nguiMapComponent: NguiMapComponent);
     initialize(): void;
-}
-export interface DataLayerOutput {
-    addfeature: any;
-    click: any;
-    dblclick: any;
-    mousedown: any;
-    mouseout: any;
-    mouseover: any;
-    mouseup: any;
-    removefeature: any;
-    removeproperty: any;
-    rightclick: any;
-    setgeometry: any;
-    setproperty: any;
-}
-export interface DataLayerInput {
-    controlPosition: any;
-    controls: any;
-    drawingMode: any;
-    featureFactory: any;
-    style: any;
-    geoJson: any;
 }

@@ -19,23 +19,3 @@ export declare class DrawingManager extends BaseMapDirective {
     rectanglecomplete: any;
     constructor(nguiMapComp: NguiMapComponent);
 }
-export interface DrawingManagerOutput {
-    circlecomplete: any;
-    markercomplete: any;
-    overlaycomplete: any;
-    polygoncomplete: any;
-    polylinecomplete: any;
-    rectanglecomplete: any;
-}
-export interface DrawingManagerInput {
-    options: any;
-    circleOptions: any;
-    drawingControl: any;
-    drawingControlOptions: any;
-    drawingMode: any;
-    map: any;
-    markerOptions: any;
-    polygonOptions: any;
-    polylineOptions: any;
-    rectangleOptions: any;
-}

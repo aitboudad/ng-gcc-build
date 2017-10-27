@@ -13,17 +13,3 @@ export declare class KmlLayer extends BaseMapDirective {
     status_changed: any;
     constructor(nguiMapComp: NguiMapComponent);
 }
-export interface KmlLayerOutput {
-    click: any;
-    defaultviewport_changed: any;
-    status_changed: any;
-}
-export interface KmlLayerInput {
-    clickable: any;
-    preserveViewport: any;
-    screenOverlays: any;
-    suppressInfoWindows: any;
-    url: any;
-    zIndex: any;
-    options: any;
-}

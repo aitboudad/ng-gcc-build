@@ -1,9 +1,9 @@
-import { Component, Directive, ElementRef, EventEmitter, Inject, Injectable, Input, NgModule, NgZone, OpaqueToken, Optional, Output, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
-import { Observable } from 'rxjs/Observable';
-import { ReplaySubject } from 'rxjs/ReplaySubject';
-import { first } from 'rxjs/operator/first';
-import { Subject } from 'rxjs/Subject';
-import { debounceTime } from 'rxjs/operator/debounceTime';
+import { Component, Directive, ElementRef, EventEmitter, Inject, Injectable, InjectionToken, Input, NgModule, NgZone, Optional, Output, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
+import { Observable as Observable$1 } from 'rxjs/Observable';
+import { ReplaySubject as ReplaySubject$1 } from 'rxjs/ReplaySubject';
+import { first as first$1 } from 'rxjs/operator/first';
+import { Subject as Subject$1 } from 'rxjs/Subject';
+import { debounceTime as debounceTime$1 } from 'rxjs/operator/debounceTime';
 import { CommonModule } from '@angular/common';
 
 /**
@@ -93,7 +93,6 @@ BaseMapDirective.propDecorators = {
  */
 function jsonize(str) {
     try {
-        JSON.parse(str);
         return str;
     }
     catch (e) {
@@ -108,7 +107,6 @@ function jsonize(str) {
         });
     }
 }
-
 /**
  * Returns string to an object by using JSON.parse()
  * @param {?} input
@@ -126,7 +124,6 @@ function getJSON(input) {
         return input;
     }
 }
-
 /**
  * Returns camel-cased from string 'Foo Bar' to 'fooBar'
  * @param {?} str
@@ -211,8 +208,11 @@ class OptionBuilder {
                 output =
                     // -> googlize -> getJsonParsed -> googlizeMultiple -> googlize until all elements are parsed
                     this.getJSONParsed(input, options)
+                        /* Foo.Bar(...) -> new google.maps.Foo.Bar(...) */
                         || this.getAnyMapObject(input)
+                        /*  MapTypeID.HYBRID -> new google.maps.MapTypeID.HYBRID */
                         || this.getAnyMapConstant(input, options)
+                        /*  2016-06-20 -> new Date('2016-06-20') */
                         || this.getDateObject(input)
                         || input;
             }
@@ -438,7 +438,7 @@ class NavigatorGeolocation {
      */
     getCurrentPosition(geoLocationOptions) {
         geoLocationOptions = geoLocationOptions || { timeout: 5000 };
-        return new Observable((responseObserver) => {
+        return new Observable$1((responseObserver) => {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
                     responseObserver.next(position);
@@ -450,7 +450,6 @@ class NavigatorGeolocation {
             }
         });
     }
-    ;
 }
 NavigatorGeolocation.decorators = [
     { type: Injectable },
@@ -460,7 +459,7 @@ NavigatorGeolocation.decorators = [
  */
 NavigatorGeolocation.ctorParameters = () => [];
 
-const NG_MAP_CONFIG_TOKEN = new OpaqueToken('NG_MAP_CONFIG_TOKEN');
+const NG_MAP_CONFIG_TOKEN = new InjectionToken('NG_MAP_CONFIG_TOKEN');
 
 /**
  * @abstract
@@ -471,7 +470,7 @@ class NgMapApiLoader {
      */
     constructor(config) {
         this.config = config;
-        this.api$ = first.call(new ReplaySubject(1));
+        this.api$ = first$1.call(new ReplaySubject$1(1));
         this.config = this.config || { apiUrl: 'https://maps.google.com/maps/api/js' };
     }
     /**
@@ -594,7 +593,7 @@ class GeoCoder {
      * @return {?}
      */
     geocode(options) {
-        return new Observable((responseObserver) => {
+        return new Observable$1((responseObserver) => {
             this.apiLoaderSubs.push(this.apiLoader.api$
                 .subscribe(() => this.requestGeocode(options, responseObserver)));
         });
@@ -713,7 +712,9 @@ class NguiMap {
                 .replace(/([A-Z])/g, ($1) => `_${$1.toLowerCase()}`) // positionChanged -> position_changed
                 .replace(/^map_/, ''); // map_click -> click  to avoid DOM conflicts
             this.zone.runOutsideAngular(() => {
-                google.maps.event.clearListeners(thisObj[prefix], eventName);
+                if (thisObj[prefix]) {
+                    google.maps.event.clearListeners(thisObj[prefix], eventName);
+                }
             });
         });
         if (thisObj[prefix]) {
@@ -774,7 +775,7 @@ class NguiMapComponent {
         this.zone = zone;
         this.mapReady$ = new EventEmitter();
         this.mapOptions = {};
-        this.inputChanges$ = new Subject();
+        this.inputChanges$ = new Subject$1();
         this.infoWindows = {};
         this.mapIdledOnce = false;
         this.initializeMapAfterDisplayed = false;
@@ -834,7 +835,7 @@ class NguiMapComponent {
                 }
             });
             // update map when input changes
-            debounceTime.call(this.inputChanges$, 1000)
+            debounceTime$1.call(this.inputChanges$, 1000)
                 .subscribe((changes) => this.nguiMap.updateGoogleObject(this.map, changes));
             if (typeof window !== 'undefined' && ((window))['nguiMapRef']) {
                 // expose map object for test and debugging on (<any>window)
@@ -870,6 +871,15 @@ class NguiMapComponent {
      */
     openInfoWindow(id, anchor) {
         this.infoWindows[id].open(anchor);
+    }
+    /**
+     * @param {?} id
+     * @return {?}
+     */
+    closeInfoWindow(id) {
+        // if infoWindow for id exists, close the infoWindow
+        if (this.infoWindows[id])
+            this.infoWindows[id].close();
     }
     /**
      * @return {?}
@@ -981,7 +991,7 @@ class InfoWindow {
         this.nguiMapComponent = nguiMapComponent;
         this.initialized$ = new EventEmitter();
         this.objectOptions = {};
-        this.inputChanges$ = new Subject();
+        this.inputChanges$ = new Subject$1();
         this.elementRef.nativeElement.style.display = 'none';
         OUTPUTS$2.forEach(output => this[output] = new EventEmitter());
     }
@@ -1020,7 +1030,7 @@ class InfoWindow {
         // set google events listeners and emits to this outputs listeners
         this.nguiMap.setObjectEvents(OUTPUTS$2, this, 'infoWindow');
         // update object when input changes
-        debounceTime.call(this.inputChanges$, 1000)
+        debounceTime$1.call(this.inputChanges$, 1000)
             .subscribe((changes) => this.nguiMap.updateGoogleObject(this.infoWindow, changes));
         this.nguiMapComponent.addToMapObjectGroup('InfoWindow', this.infoWindow);
         this.initialized$.emit(this.infoWindow);
@@ -1033,6 +1043,14 @@ class InfoWindow {
         // set content and open it
         this.infoWindow.setContent(this.template.element.nativeElement);
         this.infoWindow.open(this.nguiMapComponent.map, anchor);
+    }
+    /**
+     * @return {?}
+     */
+    close() {
+        // check if infoWindow exists, and closes it
+        if (this.infoWindow)
+            this.infoWindow.close();
     }
     /**
      * @return {?}
@@ -1158,7 +1176,6 @@ function getCustomMarkerOverlayView(htmlEl, position) {
         getPosition() {
             return this.position;
         }
-        ;
         /**
          * @param {?} zIndex
          * @return {?}
@@ -1175,7 +1192,6 @@ function getCustomMarkerOverlayView(htmlEl, position) {
             this.htmlEl.style.display = visible ? 'inline-block' : 'none';
             this.visible = visible;
         }
-        ;
     }
     return new CustomMarkerOverlayView(htmlEl, position);
 }
@@ -1190,7 +1206,7 @@ class CustomMarker {
         this.elementRef = elementRef;
         this.nguiMap = nguiMap;
         this.initialized$ = new EventEmitter();
-        this.inputChanges$ = new Subject();
+        this.inputChanges$ = new Subject$1();
         this.elementRef.nativeElement.style.display = 'none';
         OUTPUTS$3.forEach(output => this[output] = new EventEmitter());
     }
@@ -1232,7 +1248,7 @@ class CustomMarker {
         // set google events listeners and emits to this outputs listeners
         this.nguiMap.setObjectEvents(OUTPUTS$3, this, 'mapObject');
         // update object when input changes
-        debounceTime.call(this.inputChanges$, 1000)
+        debounceTime$1.call(this.inputChanges$, 1000)
             .subscribe((changes) => this.nguiMap.updateGoogleObject(this.mapObject, changes));
         this.nguiMapComponent.addToMapObjectGroup('CustomMarker', this.mapObject);
         this.initialized$.emit(this.mapObject);
@@ -1323,7 +1339,7 @@ Circle.ctorParameters = () => [
     { type: NguiMapComponent, },
 ];
 
-const INPUTS$5 = ['controlPosition', 'controls', 'drawingMode', 'featureFactory', 'style', 'geoJson'];
+const INPUTS$5 = ['controlPosition', 'controls', 'drawingMode', 'featureFactory', 'style', 'geoJson', 'geoJsonUrl'];
 const OUTPUTS$5 = [
     'addfeature', 'click', 'dblclick', 'mousedown', 'mouseout', 'mouseover',
     'mouseup', 'removefeature', 'removeproperty', 'rightclick', 'setgeometry', 'setproperty'

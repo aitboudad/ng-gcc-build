@@ -11,14 +11,3 @@ export declare class HeatmapLayer extends BaseMapDirective {
     libraryName: string;
     constructor(nguiMapComp: NguiMapComponent);
 }
-export interface HeatmapLayerOutput {
-}
-export interface HeatmapLayerInput {
-    data: any;
-    dissipating: any;
-    gradient: any;
-    maxIntensity: any;
-    opacity: any;
-    radius: any;
-    options: any;
-}

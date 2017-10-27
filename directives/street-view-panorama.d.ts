@@ -38,39 +38,3 @@ export declare class StreetViewPanorama extends BaseMapDirective implements OnDe
     initialize(): void;
     ngOnDestroy(): void;
 }
-export interface StreetViewPanoramaOutput {
-    closeclick: any;
-    pano_changed: any;
-    position_changed: any;
-    pov_changed: any;
-    resize: any;
-    status_changed: any;
-    visible_changed: any;
-    zoom_changed: any;
-}
-export interface StreetViewPanoramaInput {
-    selector: any;
-    options: any;
-    addressControl: any;
-    addressControlOptions: any;
-    clickToGo: any;
-    disableDefaultUI: any;
-    disableDoubleClickZoom: any;
-    enableCloseButton: any;
-    fullscreenControl: any;
-    fullscreenControlOptions: any;
-    imageDateControl: any;
-    linksControl: any;
-    motionTracking: any;
-    motionTrackingControl: any;
-    panControl: any;
-    panControlOptions: any;
-    pano: any;
-    position: any;
-    pov: any;
-    scrollwheel: any;
-    showRoadLabels: any;
-    visible: any;
-    zoomControl: any;
-    zoomControlOptions: any;
-}

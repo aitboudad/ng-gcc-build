@@ -1,8 +1,8 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/core'), require('rxjs/Observable'), require('rxjs/ReplaySubject'), require('rxjs/operator/first'), require('rxjs/Subject'), require('rxjs/operator/debounceTime'), require('@angular/common')) :
 	typeof define === 'function' && define.amd ? define(['exports', '@angular/core', 'rxjs/Observable', 'rxjs/ReplaySubject', 'rxjs/operator/first', 'rxjs/Subject', 'rxjs/operator/debounceTime', '@angular/common'], factory) :
-	(factory((global.map = global.map || {}),global.ng.core,global.Rx,global.Rx,global.rxjs.operator,global.Rx,global.rxjs.operator,global.ng.common));
-}(this, (function (exports,_angular_core,rxjs_Observable,rxjs_ReplaySubject,rxjs_operator_first,rxjs_Subject,rxjs_operator_debounceTime,_angular_common) { 'use strict';
+	(factory((global.map = {}),global.ng.core,global.Rx,global.Rx,global.Rx.Observable.prototype,global.Rx,global.Rx.Observable.prototype,global.ng.common));
+}(this, (function (exports,core,Observable,ReplaySubject,first,Subject,debounceTime,common) { 'use strict';
 
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = Object.setPrototypeOf ||
@@ -17,7 +17,7 @@ var __extends = (this && this.__extends) || (function () {
 /**
  * @abstract
  */
-var BaseMapDirective = (function () {
+var BaseMapDirective = /** @class */ (function () {
     /**
      * @param {?} nguiMapComponent
      * @param {?} mapObjectName
@@ -31,12 +31,12 @@ var BaseMapDirective = (function () {
         this.inputs = inputs;
         this.outputs = outputs;
         // this should be redefined on each childr directive
-        this.initialized$ = new _angular_core.EventEmitter();
+        this.initialized$ = new core.EventEmitter();
         this._subscriptions = [];
         this.nguiMap = this.nguiMapComponent['nguiMap'];
         this.optionBuilder = this.nguiMapComponent['optionBuilder'];
         // all outputs must be initialized
-        this.outputs.forEach(function (output) { return _this[output] = new _angular_core.EventEmitter(); });
+        this.outputs.forEach(function (output) { return _this[output] = new core.EventEmitter(); });
         this.mapObjectName = mapObjectName;
     }
     /**
@@ -94,7 +94,7 @@ var BaseMapDirective = (function () {
     return BaseMapDirective;
 }());
 BaseMapDirective.propDecorators = {
-    'initialized$': [{ type: _angular_core.Output },],
+    'initialized$': [{ type: core.Output },],
 };
 /**
  * return json string from json-like string
@@ -103,7 +103,6 @@ BaseMapDirective.propDecorators = {
  */
 function jsonize(str) {
     try {
-        JSON.parse(str);
         return str;
     }
     catch (e) {
@@ -155,7 +154,7 @@ function isMapsApiLoaded() {
  * change any object to google object options
  * e.g. [1,2] -> new google.maps.LatLng(1,2);
  */
-var OptionBuilder = (function () {
+var OptionBuilder = /** @class */ (function () {
     function OptionBuilder() {
     }
     /**
@@ -221,8 +220,11 @@ var OptionBuilder = (function () {
                 output =
                     // -> googlize -> getJsonParsed -> googlizeMultiple -> googlize until all elements are parsed
                     this.getJSONParsed(input, options)
+                        /* Foo.Bar(...) -> new google.maps.Foo.Bar(...) */
                         || this.getAnyMapObject(input)
+                        /*  MapTypeID.HYBRID -> new google.maps.MapTypeID.HYBRID */
                         || this.getAnyMapConstant(input, options)
+                        /*  2016-06-20 -> new Date('2016-06-20') */
                         || this.getDateObject(input)
                         || input;
             }
@@ -432,7 +434,7 @@ var OptionBuilder = (function () {
     return OptionBuilder;
 }());
 OptionBuilder.decorators = [
-    { type: _angular_core.Injectable },
+    { type: core.Injectable },
 ];
 /**
  * @nocollapse
@@ -441,7 +443,7 @@ OptionBuilder.ctorParameters = function () { return []; };
 /**
  *  service for navigator.geolocation methods
  */
-var NavigatorGeolocation = (function () {
+var NavigatorGeolocation = /** @class */ (function () {
     function NavigatorGeolocation() {
     }
     /**
@@ -450,7 +452,7 @@ var NavigatorGeolocation = (function () {
      */
     NavigatorGeolocation.prototype.getCurrentPosition = function (geoLocationOptions) {
         geoLocationOptions = geoLocationOptions || { timeout: 5000 };
-        return new rxjs_Observable.Observable(function (responseObserver) {
+        return new Observable.Observable(function (responseObserver) {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function (position) {
                     responseObserver.next(position);
@@ -462,27 +464,26 @@ var NavigatorGeolocation = (function () {
             }
         });
     };
-    
     return NavigatorGeolocation;
 }());
 NavigatorGeolocation.decorators = [
-    { type: _angular_core.Injectable },
+    { type: core.Injectable },
 ];
 /**
  * @nocollapse
  */
 NavigatorGeolocation.ctorParameters = function () { return []; };
-var NG_MAP_CONFIG_TOKEN = new _angular_core.OpaqueToken('NG_MAP_CONFIG_TOKEN');
+var NG_MAP_CONFIG_TOKEN = new core.InjectionToken('NG_MAP_CONFIG_TOKEN');
 /**
  * @abstract
  */
-var NgMapApiLoader = (function () {
+var NgMapApiLoader = /** @class */ (function () {
     /**
      * @param {?} config
      */
     function NgMapApiLoader(config) {
         this.config = config;
-        this.api$ = rxjs_operator_first.first.call(new rxjs_ReplaySubject.ReplaySubject(1));
+        this.api$ = first.first.call(new ReplaySubject.ReplaySubject(1));
         this.config = this.config || { apiUrl: 'https://maps.google.com/maps/api/js' };
     }
     /**
@@ -498,7 +499,7 @@ var NgMapApiLoader = (function () {
     };
     return NgMapApiLoader;
 }());
-var NgMapAsyncCallbackApiLoader = (function (_super) {
+var NgMapAsyncCallbackApiLoader = /** @class */ (function (_super) {
     __extends(NgMapAsyncCallbackApiLoader, _super);
     /**
      * @param {?} zone
@@ -547,16 +548,16 @@ var NgMapAsyncCallbackApiLoader = (function (_super) {
     return NgMapAsyncCallbackApiLoader;
 }(NgMapApiLoader));
 NgMapAsyncCallbackApiLoader.decorators = [
-    { type: _angular_core.Injectable },
+    { type: core.Injectable },
 ];
 /**
  * @nocollapse
  */
 NgMapAsyncCallbackApiLoader.ctorParameters = function () { return [
-    { type: _angular_core.NgZone, },
-    { type: undefined, decorators: [{ type: _angular_core.Optional }, { type: _angular_core.Inject, args: [NG_MAP_CONFIG_TOKEN,] },] },
+    { type: core.NgZone, },
+    { type: undefined, decorators: [{ type: core.Optional }, { type: core.Inject, args: [NG_MAP_CONFIG_TOKEN,] },] },
 ]; };
-var NgMapAsyncApiLoader = (function (_super) {
+var NgMapAsyncApiLoader = /** @class */ (function (_super) {
     __extends(NgMapAsyncApiLoader, _super);
     /**
      * @param {?} config
@@ -587,19 +588,19 @@ var NgMapAsyncApiLoader = (function (_super) {
     return NgMapAsyncApiLoader;
 }(NgMapApiLoader));
 NgMapAsyncApiLoader.decorators = [
-    { type: _angular_core.Injectable },
+    { type: core.Injectable },
 ];
 /**
  * @nocollapse
  */
 NgMapAsyncApiLoader.ctorParameters = function () { return [
-    { type: undefined, decorators: [{ type: _angular_core.Optional }, { type: _angular_core.Inject, args: [NG_MAP_CONFIG_TOKEN,] },] },
+    { type: undefined, decorators: [{ type: core.Optional }, { type: core.Inject, args: [NG_MAP_CONFIG_TOKEN,] },] },
 ]; };
 /**
  *   Provides [defered/promise API](https://docs.angularjs.org/api/ng/service/$q)
  *   service for Google Geocoder service
  */
-var GeoCoder = (function () {
+var GeoCoder = /** @class */ (function () {
     /**
      * @param {?} apiLoader
      */
@@ -613,7 +614,7 @@ var GeoCoder = (function () {
      */
     GeoCoder.prototype.geocode = function (options) {
         var _this = this;
-        return new rxjs_Observable.Observable(function (responseObserver) {
+        return new Observable.Observable(function (responseObserver) {
             _this.apiLoaderSubs.push(_this.apiLoader.api$
                 .subscribe(function () { return _this.requestGeocode(options, responseObserver); }));
         });
@@ -644,7 +645,7 @@ var GeoCoder = (function () {
     return GeoCoder;
 }());
 GeoCoder.decorators = [
-    { type: _angular_core.Injectable },
+    { type: core.Injectable },
 ];
 /**
  * @nocollapse
@@ -655,7 +656,7 @@ GeoCoder.ctorParameters = function () { return [
 /**
  * collection of map instance-related properties and methods
  */
-var NguiMap = (function () {
+var NguiMap = /** @class */ (function () {
     /**
      * @param {?} geoCoder
      * @param {?} optionBuilder
@@ -735,7 +736,9 @@ var NguiMap = (function () {
                 .replace(/([A-Z])/g, function ($1) { return "_" + $1.toLowerCase(); }) // positionChanged -> position_changed
                 .replace(/^map_/, ''); // map_click -> click  to avoid DOM conflicts
             _this.zone.runOutsideAngular(function () {
-                google.maps.event.clearListeners(thisObj[prefix], eventName);
+                if (thisObj[prefix]) {
+                    google.maps.event.clearListeners(thisObj[prefix], eventName);
+                }
             });
         });
         if (thisObj[prefix]) {
@@ -749,7 +752,7 @@ var NguiMap = (function () {
     return NguiMap;
 }());
 NguiMap.decorators = [
-    { type: _angular_core.Injectable },
+    { type: core.Injectable },
 ];
 /**
  * @nocollapse
@@ -757,7 +760,7 @@ NguiMap.decorators = [
 NguiMap.ctorParameters = function () { return [
     { type: GeoCoder, },
     { type: OptionBuilder, },
-    { type: _angular_core.NgZone, },
+    { type: core.NgZone, },
 ]; };
 var INPUTS$1 = [
     'backgroundColor', 'center', 'disableDefaultUI', 'disableDoubleClickZoom', 'draggable', 'draggableCursor',
@@ -776,7 +779,7 @@ var OUTPUTS$1 = [
     // to avoid DOM event conflicts
     'mapClick', 'mapMouseover', 'mapMouseout', 'mapMousemove', 'mapDrag', 'mapDragend', 'mapDragstart'
 ];
-var NguiMapComponent = (function () {
+var NguiMapComponent = /** @class */ (function () {
     /**
      * @param {?} optionBuilder
      * @param {?} elementRef
@@ -795,16 +798,16 @@ var NguiMapComponent = (function () {
         this.nguiMap = nguiMap;
         this.apiLoader = apiLoader;
         this.zone = zone;
-        this.mapReady$ = new _angular_core.EventEmitter();
+        this.mapReady$ = new core.EventEmitter();
         this.mapOptions = {};
-        this.inputChanges$ = new rxjs_Subject.Subject();
+        this.inputChanges$ = new Subject.Subject();
         this.infoWindows = {};
         this.mapIdledOnce = false;
         this.initializeMapAfterDisplayed = false;
         apiLoader.load();
         // all outputs needs to be initialized,
         // http://stackoverflow.com/questions/37765519/angular2-directive-cannot-read-property-subscribe-of-undefined-with-outputs
-        OUTPUTS$1.forEach(function (output) { return _this[output] = new _angular_core.EventEmitter(); });
+        OUTPUTS$1.forEach(function (output) { return _this[output] = new core.EventEmitter(); });
     }
     /**
      * @return {?}
@@ -859,7 +862,7 @@ var NguiMapComponent = (function () {
                 }
             });
             // update map when input changes
-            rxjs_operator_debounceTime.debounceTime.call(_this.inputChanges$, 1000)
+            debounceTime.debounceTime.call(_this.inputChanges$, 1000)
                 .subscribe(function (changes) { return _this.nguiMap.updateGoogleObject(_this.map, changes); });
             if (typeof window !== 'undefined' && ((window))['nguiMapRef']) {
                 // expose map object for test and debugging on (<any>window)
@@ -898,6 +901,15 @@ var NguiMapComponent = (function () {
         this.infoWindows[id].open(anchor);
     };
     /**
+     * @param {?} id
+     * @return {?}
+     */
+    NguiMapComponent.prototype.closeInfoWindow = function (id) {
+        // if infoWindow for id exists, close the infoWindow
+        if (this.infoWindows[id])
+            this.infoWindows[id].close();
+    };
+    /**
      * @return {?}
      */
     NguiMapComponent.prototype.ngOnDestroy = function () {
@@ -934,13 +946,13 @@ var NguiMapComponent = (function () {
     return NguiMapComponent;
 }());
 NguiMapComponent.decorators = [
-    { type: _angular_core.Component, args: [{
+    { type: core.Component, args: [{
                 selector: 'ngui-map',
                 providers: [NguiMap, OptionBuilder, GeoCoder, NavigatorGeolocation],
                 styles: ["\n    ngui-map {display: block; height: 300px;}\n    .google-map {width: 100%; height: 100%}\n  "],
                 inputs: INPUTS$1,
                 outputs: OUTPUTS$1,
-                encapsulation: _angular_core.ViewEncapsulation.None,
+                encapsulation: core.ViewEncapsulation.None,
                 template: "\n    <div class=\"google-map\"></div>\n    <ng-content></ng-content>\n  ",
             },] },
 ];
@@ -949,19 +961,19 @@ NguiMapComponent.decorators = [
  */
 NguiMapComponent.ctorParameters = function () { return [
     { type: OptionBuilder, },
-    { type: _angular_core.ElementRef, },
+    { type: core.ElementRef, },
     { type: NavigatorGeolocation, },
     { type: GeoCoder, },
     { type: NguiMap, },
     { type: NgMapApiLoader, },
-    { type: _angular_core.NgZone, },
+    { type: core.NgZone, },
 ]; };
 NguiMapComponent.propDecorators = {
-    'mapReady$': [{ type: _angular_core.Output },],
+    'mapReady$': [{ type: core.Output },],
 };
 var INPUTS = [];
 var OUTPUTS = [];
-var BicyclingLayer = (function (_super) {
+var BicyclingLayer = /** @class */ (function (_super) {
     __extends(BicyclingLayer, _super);
     /**
      * @param {?} nguiMapComp
@@ -972,7 +984,7 @@ var BicyclingLayer = (function (_super) {
     return BicyclingLayer;
 }(BaseMapDirective));
 BicyclingLayer.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map > bicycling-layer',
                 inputs: INPUTS,
                 outputs: OUTPUTS,
@@ -990,7 +1002,7 @@ var INPUTS$2 = [
 var OUTPUTS$2 = [
     'closeclick', 'content_changed', 'domready', 'position_changed', 'zindex_changed'
 ];
-var InfoWindow = (function () {
+var InfoWindow = /** @class */ (function () {
     /**
      * @param {?} elementRef
      * @param {?} nguiMap
@@ -1001,11 +1013,11 @@ var InfoWindow = (function () {
         this.elementRef = elementRef;
         this.nguiMap = nguiMap;
         this.nguiMapComponent = nguiMapComponent;
-        this.initialized$ = new _angular_core.EventEmitter();
+        this.initialized$ = new core.EventEmitter();
         this.objectOptions = {};
-        this.inputChanges$ = new rxjs_Subject.Subject();
+        this.inputChanges$ = new Subject.Subject();
         this.elementRef.nativeElement.style.display = 'none';
-        OUTPUTS$2.forEach(function (output) { return _this[output] = new _angular_core.EventEmitter(); });
+        OUTPUTS$2.forEach(function (output) { return _this[output] = new core.EventEmitter(); });
     }
     /**
      * @return {?}
@@ -1044,7 +1056,7 @@ var InfoWindow = (function () {
         // set google events listeners and emits to this outputs listeners
         this.nguiMap.setObjectEvents(OUTPUTS$2, this, 'infoWindow');
         // update object when input changes
-        rxjs_operator_debounceTime.debounceTime.call(this.inputChanges$, 1000)
+        debounceTime.debounceTime.call(this.inputChanges$, 1000)
             .subscribe(function (changes) { return _this.nguiMap.updateGoogleObject(_this.infoWindow, changes); });
         this.nguiMapComponent.addToMapObjectGroup('InfoWindow', this.infoWindow);
         this.initialized$.emit(this.infoWindow);
@@ -1061,6 +1073,14 @@ var InfoWindow = (function () {
     /**
      * @return {?}
      */
+    InfoWindow.prototype.close = function () {
+        // check if infoWindow exists, and closes it
+        if (this.infoWindow)
+            this.infoWindow.close();
+    };
+    /**
+     * @return {?}
+     */
     InfoWindow.prototype.ngOnDestroy = function () {
         this.inputChanges$.complete();
         if (this.infoWindow) {
@@ -1071,7 +1091,7 @@ var InfoWindow = (function () {
     return InfoWindow;
 }());
 InfoWindow.decorators = [
-    { type: _angular_core.Component, args: [{
+    { type: core.Component, args: [{
                 selector: 'ngui-map > info-window',
                 inputs: INPUTS$2,
                 outputs: OUTPUTS$2,
@@ -1082,13 +1102,13 @@ InfoWindow.decorators = [
  * @nocollapse
  */
 InfoWindow.ctorParameters = function () { return [
-    { type: _angular_core.ElementRef, },
+    { type: core.ElementRef, },
     { type: NguiMap, },
     { type: NguiMapComponent, },
 ]; };
 InfoWindow.propDecorators = {
-    'initialized$': [{ type: _angular_core.Output },],
-    'template': [{ type: _angular_core.ViewChild, args: ['template', { read: _angular_core.ViewContainerRef },] },],
+    'initialized$': [{ type: core.Output },],
+    'template': [{ type: core.ViewChild, args: ['template', { read: core.ViewContainerRef },] },],
 };
 var INPUTS$3 = [
     'position'
@@ -1108,7 +1128,7 @@ var OUTPUTS$3 = [
  * @return {?}
  */
 function getCustomMarkerOverlayView(htmlEl, position) {
-    var CustomMarkerOverlayView = (function (_super) {
+    var CustomMarkerOverlayView = /** @class */ (function (_super) {
         __extends(CustomMarkerOverlayView, _super);
         /**
          * @param {?} htmlEl
@@ -1184,7 +1204,6 @@ function getCustomMarkerOverlayView(htmlEl, position) {
         CustomMarkerOverlayView.prototype.getPosition = function () {
             return this.position;
         };
-        
         /**
          * @param {?} zIndex
          * @return {?}
@@ -1201,12 +1220,11 @@ function getCustomMarkerOverlayView(htmlEl, position) {
             this.htmlEl.style.display = visible ? 'inline-block' : 'none';
             this.visible = visible;
         };
-        
         return CustomMarkerOverlayView;
     }(google.maps.OverlayView));
     return new CustomMarkerOverlayView(htmlEl, position);
 }
-var CustomMarker = (function () {
+var CustomMarker = /** @class */ (function () {
     /**
      * @param {?} nguiMapComponent
      * @param {?} elementRef
@@ -1217,10 +1235,10 @@ var CustomMarker = (function () {
         this.nguiMapComponent = nguiMapComponent;
         this.elementRef = elementRef;
         this.nguiMap = nguiMap;
-        this.initialized$ = new _angular_core.EventEmitter();
-        this.inputChanges$ = new rxjs_Subject.Subject();
+        this.initialized$ = new core.EventEmitter();
+        this.inputChanges$ = new Subject.Subject();
         this.elementRef.nativeElement.style.display = 'none';
-        OUTPUTS$3.forEach(function (output) { return _this[output] = new _angular_core.EventEmitter(); });
+        OUTPUTS$3.forEach(function (output) { return _this[output] = new core.EventEmitter(); });
     }
     /**
      * @return {?}
@@ -1262,7 +1280,7 @@ var CustomMarker = (function () {
         // set google events listeners and emits to this outputs listeners
         this.nguiMap.setObjectEvents(OUTPUTS$3, this, 'mapObject');
         // update object when input changes
-        rxjs_operator_debounceTime.debounceTime.call(this.inputChanges$, 1000)
+        debounceTime.debounceTime.call(this.inputChanges$, 1000)
             .subscribe(function (changes) { return _this.nguiMap.updateGoogleObject(_this.mapObject, changes); });
         this.nguiMapComponent.addToMapObjectGroup('CustomMarker', this.mapObject);
         this.initialized$.emit(this.mapObject);
@@ -1270,7 +1288,7 @@ var CustomMarker = (function () {
     return CustomMarker;
 }());
 CustomMarker.decorators = [
-    { type: _angular_core.Component, args: [{
+    { type: core.Component, args: [{
                 selector: 'ngui-map > custom-marker',
                 inputs: INPUTS$3,
                 outputs: OUTPUTS$3,
@@ -1282,11 +1300,11 @@ CustomMarker.decorators = [
  */
 CustomMarker.ctorParameters = function () { return [
     { type: NguiMapComponent, },
-    { type: _angular_core.ElementRef, },
+    { type: core.ElementRef, },
     { type: NguiMap, },
 ]; };
 CustomMarker.propDecorators = {
-    'initialized$': [{ type: _angular_core.Output },],
+    'initialized$': [{ type: core.Output },],
 };
 var INPUTS$4 = [
     'center', 'clickable', 'draggable', 'editable', 'fillColor', 'fillOpacity', 'map', 'radius',
@@ -1298,7 +1316,7 @@ var OUTPUTS$4 = [
     'centerChanged', 'click', 'dblclick', 'drag', 'dragend', 'dragstart',
     'mousedown', 'mousemove', 'mouseout', 'mouseover', 'mouseup', 'radiusChanged', 'rightclick',
 ];
-var Circle = (function (_super) {
+var Circle = /** @class */ (function (_super) {
     __extends(Circle, _super);
     /**
      * @param {?} nguiMapComp
@@ -1342,7 +1360,7 @@ var Circle = (function (_super) {
     return Circle;
 }(BaseMapDirective));
 Circle.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map>circle, ngui-map>map-circle',
                 inputs: INPUTS$4,
                 outputs: OUTPUTS$4,
@@ -1354,12 +1372,12 @@ Circle.decorators = [
 Circle.ctorParameters = function () { return [
     { type: NguiMapComponent, },
 ]; };
-var INPUTS$5 = ['controlPosition', 'controls', 'drawingMode', 'featureFactory', 'style', 'geoJson'];
+var INPUTS$5 = ['controlPosition', 'controls', 'drawingMode', 'featureFactory', 'style', 'geoJson', 'geoJsonUrl'];
 var OUTPUTS$5 = [
     'addfeature', 'click', 'dblclick', 'mousedown', 'mouseout', 'mouseover',
     'mouseup', 'removefeature', 'removeproperty', 'rightclick', 'setgeometry', 'setproperty'
 ];
-var DataLayer = (function (_super) {
+var DataLayer = /** @class */ (function (_super) {
     __extends(DataLayer, _super);
     /**
      * @param {?} nguiMapComponent
@@ -1393,7 +1411,7 @@ var DataLayer = (function (_super) {
     return DataLayer;
 }(BaseMapDirective));
 DataLayer.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map > data-layer',
                 inputs: INPUTS$5,
                 outputs: OUTPUTS$5,
@@ -1411,7 +1429,7 @@ var INPUTS$6 = [
     'suppressInfoWindows', 'suppressMarkers', 'suppressPolylines'
 ];
 var OUTPUTS$6 = ['directions_changed'];
-var DirectionsRenderer = (function (_super) {
+var DirectionsRenderer = /** @class */ (function (_super) {
     __extends(DirectionsRenderer, _super);
     /**
      * @param {?} nguiMapComponent
@@ -1479,7 +1497,7 @@ var DirectionsRenderer = (function (_super) {
     return DirectionsRenderer;
 }(BaseMapDirective));
 DirectionsRenderer.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map > directions-renderer',
                 inputs: INPUTS$6,
                 outputs: OUTPUTS$6,
@@ -1493,7 +1511,7 @@ DirectionsRenderer.ctorParameters = function () { return [
     { type: NavigatorGeolocation, },
 ]; };
 DirectionsRenderer.propDecorators = {
-    'directionsRequest': [{ type: _angular_core.Input, args: ['directions-request',] },],
+    'directionsRequest': [{ type: core.Input, args: ['directions-request',] },],
 };
 var INPUTS$7 = [
     'options',
@@ -1504,7 +1522,7 @@ var OUTPUTS$7 = [
     'circlecomplete', 'markercomplete', 'overlaycomplete',
     'polygoncomplete', 'polylinecomplete', 'rectanglecomplete'
 ];
-var DrawingManager = (function (_super) {
+var DrawingManager = /** @class */ (function (_super) {
     __extends(DrawingManager, _super);
     /**
      * @param {?} nguiMapComp
@@ -1517,7 +1535,7 @@ var DrawingManager = (function (_super) {
     return DrawingManager;
 }(BaseMapDirective));
 DrawingManager.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map > drawing-manager',
                 inputs: INPUTS$7,
                 outputs: OUTPUTS$7,
@@ -1531,7 +1549,7 @@ DrawingManager.ctorParameters = function () { return [
 ]; };
 var INPUTS$8 = ['url', 'bounds', 'clickable', 'opacity'];
 var OUTPUTS$8 = ['click', 'dblclick'];
-var GroundOverlay = (function (_super) {
+var GroundOverlay = /** @class */ (function (_super) {
     __extends(GroundOverlay, _super);
     /**
      * @param {?} nguiMapComp
@@ -1559,7 +1577,7 @@ var GroundOverlay = (function (_super) {
     return GroundOverlay;
 }(BaseMapDirective));
 GroundOverlay.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map > ground-overlay',
                 inputs: INPUTS$8,
                 outputs: OUTPUTS$8,
@@ -1573,7 +1591,7 @@ GroundOverlay.ctorParameters = function () { return [
 ]; };
 var INPUTS$9 = ['data', 'dissipating', 'gradient', 'maxIntensity', 'opacity', 'radius', 'options'];
 var OUTPUTS$9 = [];
-var HeatmapLayer = (function (_super) {
+var HeatmapLayer = /** @class */ (function (_super) {
     __extends(HeatmapLayer, _super);
     /**
      * @param {?} nguiMapComp
@@ -1586,7 +1604,7 @@ var HeatmapLayer = (function (_super) {
     return HeatmapLayer;
 }(BaseMapDirective));
 HeatmapLayer.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map > heatmap-layer',
                 inputs: INPUTS$9,
                 outputs: OUTPUTS$9,
@@ -1600,7 +1618,7 @@ HeatmapLayer.ctorParameters = function () { return [
 ]; };
 var INPUTS$10 = ['clickable', 'preserveViewport', 'screenOverlays', 'suppressInfoWindows', 'url', 'zIndex', 'options'];
 var OUTPUTS$10 = ['click', 'defaultviewport_changed', 'status_changed'];
-var KmlLayer = (function (_super) {
+var KmlLayer = /** @class */ (function (_super) {
     __extends(KmlLayer, _super);
     /**
      * @param {?} nguiMapComp
@@ -1611,7 +1629,7 @@ var KmlLayer = (function (_super) {
     return KmlLayer;
 }(BaseMapDirective));
 KmlLayer.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map > kml-layer',
                 inputs: INPUTS$10,
                 outputs: OUTPUTS$10,
@@ -1634,7 +1652,7 @@ var OUTPUTS$11 = [
     'dragstart', 'flatChanged', 'iconChanged', 'mousedown', 'mouseout', 'mouseover', 'mouseup', 'positionChanged', 'rightclick',
     'shapeChanged', 'titleChanged', 'visibleChanged', 'zindexChanged'
 ];
-var Marker = (function (_super) {
+var Marker = /** @class */ (function (_super) {
     __extends(Marker, _super);
     /**
      * @param {?} nguiMapComp
@@ -1690,7 +1708,7 @@ var Marker = (function (_super) {
     return Marker;
 }(BaseMapDirective));
 Marker.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map > marker',
                 inputs: INPUTS$11,
                 outputs: OUTPUTS$11,
@@ -1702,7 +1720,7 @@ Marker.decorators = [
 Marker.ctorParameters = function () { return [
     { type: NguiMapComponent, },
 ]; };
-var PlacesAutoComplete = (function () {
+var PlacesAutoComplete = /** @class */ (function () {
     /**
      * @param {?} optionBuilder
      * @param {?} elementRef
@@ -1713,8 +1731,8 @@ var PlacesAutoComplete = (function () {
         this.optionBuilder = optionBuilder;
         this.elementRef = elementRef;
         this.apiLoader = apiLoader;
-        this.place_changed = new _angular_core.EventEmitter();
-        this.initialized$ = new _angular_core.EventEmitter();
+        this.place_changed = new core.EventEmitter();
+        this.initialized$ = new core.EventEmitter();
         // only called when map is ready
         this.initialize = function () {
             _this.objectOptions =
@@ -1731,7 +1749,7 @@ var PlacesAutoComplete = (function () {
     return PlacesAutoComplete;
 }());
 PlacesAutoComplete.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: '[places-auto-complete]'
             },] },
 ];
@@ -1740,15 +1758,15 @@ PlacesAutoComplete.decorators = [
  */
 PlacesAutoComplete.ctorParameters = function () { return [
     { type: OptionBuilder, },
-    { type: _angular_core.ElementRef, },
+    { type: core.ElementRef, },
     { type: NgMapApiLoader, },
 ]; };
 PlacesAutoComplete.propDecorators = {
-    'bounds': [{ type: _angular_core.Input, args: ['bounds',] },],
-    'componentRestrictions': [{ type: _angular_core.Input, args: ['componentRestrictions',] },],
-    'types': [{ type: _angular_core.Input, args: ['types',] },],
-    'place_changed': [{ type: _angular_core.Output, args: ['place_changed',] },],
-    'initialized$': [{ type: _angular_core.Output },],
+    'bounds': [{ type: core.Input, args: ['bounds',] },],
+    'componentRestrictions': [{ type: core.Input, args: ['componentRestrictions',] },],
+    'types': [{ type: core.Input, args: ['types',] },],
+    'place_changed': [{ type: core.Output, args: ['place_changed',] },],
+    'initialized$': [{ type: core.Output },],
 };
 var INPUTS$12 = [
     'clickable', 'draggable', 'editable', 'fillColor', 'fillOpacity', 'geodesic', 'paths',
@@ -1758,7 +1776,7 @@ var OUTPUTS$12 = [
     'click', 'dblclick', 'drag', 'dragend', 'dragstart', 'mousedown',
     'mousemove', 'mouseout', 'mouseover', 'mouseup', 'rightclick',
 ];
-var Polygon = (function (_super) {
+var Polygon = /** @class */ (function (_super) {
     __extends(Polygon, _super);
     /**
      * @param {?} nguiMapComp
@@ -1769,7 +1787,7 @@ var Polygon = (function (_super) {
     return Polygon;
 }(BaseMapDirective));
 Polygon.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map>polygon, ngui-map>map-polygon',
                 inputs: INPUTS$12,
                 outputs: OUTPUTS$12,
@@ -1789,7 +1807,7 @@ var OUTPUTS$13 = [
     'click', 'dblclick', 'drag', 'dragend', 'dragstart', 'mousedown',
     'mousemove', 'mouseout', 'mouseover', 'mouseup', 'rightclick'
 ];
-var Polyline = (function (_super) {
+var Polyline = /** @class */ (function (_super) {
     __extends(Polyline, _super);
     /**
      * @param {?} nguiMapComp
@@ -1800,7 +1818,7 @@ var Polyline = (function (_super) {
     return Polyline;
 }(BaseMapDirective));
 Polyline.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map > polyline',
                 inputs: INPUTS$13,
                 outputs: OUTPUTS$13,
@@ -1823,7 +1841,7 @@ var OUTPUTS$14 = [
     'closeclick', 'pano_changed', 'position_changed', 'pov_changed', 'resize', 'status_changed',
     'visible_changed', 'zoom_changed'
 ];
-var StreetViewPanorama = (function (_super) {
+var StreetViewPanorama = /** @class */ (function (_super) {
     __extends(StreetViewPanorama, _super);
     /**
      * @param {?} nguiMapComp
@@ -1866,7 +1884,7 @@ var StreetViewPanorama = (function (_super) {
     return StreetViewPanorama;
 }(BaseMapDirective));
 StreetViewPanorama.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map > street-view-panorama',
                 inputs: INPUTS$14,
                 outputs: OUTPUTS$14,
@@ -1880,7 +1898,7 @@ StreetViewPanorama.ctorParameters = function () { return [
 ]; };
 var INPUTS$15 = ['autoRefresh', 'options'];
 var OUTPUTS$15 = [];
-var TrafficLayer = (function (_super) {
+var TrafficLayer = /** @class */ (function (_super) {
     __extends(TrafficLayer, _super);
     /**
      * @param {?} nguiMapComp
@@ -1891,7 +1909,7 @@ var TrafficLayer = (function (_super) {
     return TrafficLayer;
 }(BaseMapDirective));
 TrafficLayer.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map > traffic-layer',
                 inputs: INPUTS$15,
                 outputs: OUTPUTS$15,
@@ -1905,7 +1923,7 @@ TrafficLayer.ctorParameters = function () { return [
 ]; };
 var INPUTS$16 = [];
 var OUTPUTS$16 = [];
-var TransitLayer = (function (_super) {
+var TransitLayer = /** @class */ (function (_super) {
     __extends(TransitLayer, _super);
     /**
      * @param {?} nguiMapComp
@@ -1916,7 +1934,7 @@ var TransitLayer = (function (_super) {
     return TransitLayer;
 }(BaseMapDirective));
 TransitLayer.decorators = [
-    { type: _angular_core.Directive, args: [{
+    { type: core.Directive, args: [{
                 selector: 'ngui-map > transit-layer',
                 inputs: INPUTS$16,
                 outputs: OUTPUTS$16,
@@ -1935,7 +1953,7 @@ var COMPONENTS_DIRECTIVES = [
     StreetViewPanorama, PlacesAutoComplete, DirectionsRenderer,
     DrawingManager,
 ];
-var NguiMapModule = (function () {
+var NguiMapModule = /** @class */ (function () {
     function NguiMapModule() {
     }
     /**
@@ -1954,8 +1972,8 @@ var NguiMapModule = (function () {
     return NguiMapModule;
 }());
 NguiMapModule.decorators = [
-    { type: _angular_core.NgModule, args: [{
-                imports: [_angular_common.CommonModule],
+    { type: core.NgModule, args: [{
+                imports: [common.CommonModule],
                 declarations: COMPONENTS_DIRECTIVES,
                 exports: [COMPONENTS_DIRECTIVES],
                 providers: [

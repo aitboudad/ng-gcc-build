@@ -26,30 +26,3 @@ export declare class Polyline extends BaseMapDirective {
     rightclick: any;
     constructor(nguiMapComp: NguiMapComponent);
 }
-export interface PolylineOutput {
-    click: any;
-    dblclick: any;
-    drag: any;
-    dragend: any;
-    dragstart: any;
-    mousedown: any;
-    mousemove: any;
-    mouseout: any;
-    mouseover: any;
-    mouseup: any;
-    rightclick: any;
-}
-export interface PolylineInput {
-    clickable: any;
-    draggable: any;
-    editable: any;
-    geodesic: any;
-    icons: any;
-    path: any;
-    strokeColor: any;
-    strokeOpacity: any;
-    strokeWeight: any;
-    visible: any;
-    zIndex: any;
-    options: any;
-}
